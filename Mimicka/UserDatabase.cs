@@ -23,11 +23,11 @@ namespace Tomestone
             public int VisitCount;
             public int KappaCount;
             public int HeartCount;
-            public DateTime FirstSeen;
-            public DateTime LastSeen;
-            public DateTime LastSpoke;
-            public string FirstGame;
-            public string LastGame;
+            public DateTime FirstSeen = DateTime.Parse("2014-01-01");
+            public DateTime LastSeen = DateTime.Parse("2014-01-01");
+            public DateTime LastSpoke = DateTime.Parse("2014-01-01");
+            public string FirstGame = "None";
+            public string LastGame = "None";
 
             public void Update(Dictionary<string, string> data)
             {
@@ -88,7 +88,7 @@ namespace Tomestone
         {
             var data = new Dictionary<string, string>();
             data.Add("user", username);
-            data.Add("firstSeen", DateTime.Now.ToString("yyyy-MM-dd"));
+            data.Add("firstSeen", DateTime.Now.ToString("s"));
             var stream = _twitch.GetTwitchStream(Main.chatMain.Substring(1));
             if (stream != null)
                 data.Add("firstGame", stream.game);
