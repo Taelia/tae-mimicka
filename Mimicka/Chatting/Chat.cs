@@ -125,9 +125,9 @@ namespace Tomestone.Chatting
             
             //dont need to do anything if the difference is less than 5mins
             //if ( (DateTime.Now - user.LastSeen) < TimeSpan.FromMinutes(5)) return;
-            //Console.WriteLine(user.LastSeen);
-            //Console.WriteLine(user.LastSpoke);
-            //Console.WriteLine(user.LastGame);
+            Console.WriteLine(user.LastSeen);
+            Console.WriteLine(user.LastSpoke);
+            Console.WriteLine(user.LastGame);
 
 
 
@@ -137,14 +137,14 @@ namespace Tomestone.Chatting
             var duringGame = user.LastGame;
 
 
-            //Console.WriteLine(seenText);
-            //Console.WriteLine(spokeText);
+            Console.WriteLine(seenText);
+            Console.WriteLine(spokeText);
 
 
             //System.IO.StreamWriter file = new System.IO.StreamWriter("test.txt", true);
 
-            if (duringGame == "None" || duringGame == "") SendMessage("#taelia_welcome", "New viewer: " + from + "(test code)");
-            else SendMessage("#taelia_welcome", from + "| Seen: " + seenText + " during [" + duringGame + "] | Spoke: " + spokeText + "(test code)");
+            if (duringGame == "None" || duringGame == "") SendMessage("#taelia_welcome", "New viewer: " + from + "(test#2)");
+            else SendMessage("#taelia_welcome", from + "| Seen: " + seenText + " during [" + duringGame + "] | Spoke: " + spokeText + "(test#2)");
 
             //file.Close();
         }
