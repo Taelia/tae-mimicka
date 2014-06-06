@@ -39,6 +39,17 @@ namespace Tomestone.Chatting
             var obj = new MessageObject(from, message);
             if (from.Nick == "tomestone") return;
 
+            /* Due to the possibility that a message can be received from a user before the join event,
+             * it is necessary to work around this by first checking here if the user has been
+             * initialized. (this would be expected if the join had actually happened first).
+             */
+            if (!Users.ContainsUser(from.Nick))
+            {
+                //Console.WriteLine("messaged received before join");
+                OnJoin(channel, from.Nick);
+            }
+
+
             UpdateOnMessage(from.Nick, message);
         }
 
@@ -52,13 +63,21 @@ namespace Tomestone.Chatting
         {
             if (from == "tomestone") return;
 
-            SendLastVisited(from);
-            UpdateOnJoin(from);
+            // avoid duplicate messages in the case where someone spoke before join
+            if (!Users.ContainsUser(from))
+            {
+                SendLastVisited(from);
+                UpdateOnJoin(from);
+            }
+            
         }
 
         //Part and Quit don't work properly on Twitch
         public void OnPart(Channel channel, string from)
         {
+            // remove the user from the list of users
+            Console.WriteLine("removed user from list");
+            Users.RemoveUser(from);
         }
         public void OnQuit(Channel channel, string from)
         {
@@ -124,29 +143,14 @@ namespace Tomestone.Chatting
             var user = Users.GetUser(from);
             
             //dont need to do anything if the difference is less than 5mins
-            //if ( (DateTime.Now - user.LastSeen) < TimeSpan.FromMinutes(5)) return;
-            //Console.WriteLine(user.LastSeen);
-            //Console.WriteLine(user.LastSpoke);
-            //Console.WriteLine(user.LastGame);
-
-
-
+            if ( (DateTime.Now - user.LastSeen) < TimeSpan.FromMinutes(5)) return;
 
             var seenText = (user.LastSeen == DateTime.Parse("2014-01-01")) ? "Unknown" : DaysAgoText(((DateTime.Now + TimeSpan.FromHours(2)).Date - (user.LastSeen + TimeSpan.FromHours(2)).Date).Days);
             var spokeText = (user.LastSpoke == DateTime.Parse("2014-01-01")) ? "Unknown" : DaysAgoText(((DateTime.Now + TimeSpan.FromHours(2)).Date - (user.LastSpoke + TimeSpan.FromHours(2)).Date).Days);
             var duringGame = user.LastGame;
 
-
-            //Console.WriteLine(seenText);
-            //Console.WriteLine(spokeText);
-
-
-            //System.IO.StreamWriter file = new System.IO.StreamWriter("test.txt", true);
-
-            if (duringGame == "None" || duringGame == "") SendMessage("#taelia_welcome", "New viewer: " + from + "(test#2)");
-            else SendMessage("#taelia_welcome", from + "| Seen: " + seenText + " during [" + duringGame + "] | Spoke: " + spokeText + "(test#2)");
-
-            //file.Close();
+            if (duringGame == "None" || duringGame == "") SendMessage("#taelia_welcome", "New viewer: " + from);
+            else SendMessage("#taelia_welcome", from + "| Seen: " + seenText + " during [" + duringGame + "] | Spoke: " + spokeText);
         }
 
         private string DaysAgoText(int days)

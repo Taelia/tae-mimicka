@@ -28,14 +28,6 @@ namespace Tomestone.Models
         //From here, start the different parts of the screen.
         public Main(MainViewModel view)
         {
-            //System.DateTime date1 = new System.DateTime(2014, 5, 23, 21, 15, 0);
-            //System.DateTime date2 = new System.DateTime(2014, 5, 23, 23, 2, 0);
-            //Console.WriteLine(date2 + TimeSpan.FromHours(2));
-            //Console.WriteLine(date1 + TimeSpan.FromHours(2));
-
-            //Console.WriteLine(((date2+TimeSpan.FromHours(2)).Date - (date1+TimeSpan.FromHours(2)).Date).Days);
-
-
             View = view;
 
             InitializeDatabase();
@@ -45,7 +37,7 @@ namespace Tomestone.Models
 
         private void InitializeDatabase()
         {
-            Main.Db.SafeQuery("CREATE TABLE IF NOT EXISTS users ( userId INTEGER PRIMARY KEY AUTOINCREMENT, user NOT NULL UNIQUE, messageCount NOT NULL DEFAULT ( '0' ), visitCount NOT NULL DEFAULT ( '0' ), kappaCount NOT NULL DEFAULT ( '0' ), heartCount NOT NULL DEFAULT ( '0' ), firstSeen DATE NOT NULL DEFAULT ( '2014-01-01' ), lastSeen DATE NOT NULL DEFAULT ( '2014-01-01' ), lastSpoke DATE NOT NULL DEFAULT ( '2014-01-01' ), firstGame NOT NULL DEFAULT ( 'None' ), lastGame NOT NULL DEFAULT ( 'None' ) );");
+            Main.Db.SafeQuery("CREATE TABLE IF NOT EXISTS users ( userId INTEGER PRIMARY KEY AUTOINCREMENT, user NOT NULL UNIQUE, messageCount NOT NULL DEFAULT ( '30' ), visitCount NOT NULL DEFAULT ( '0' ), kappaCount NOT NULL DEFAULT ( '0' ), heartCount NOT NULL DEFAULT ( '0' ), messageLength NOT NULL DEFAULT ( '0' ), firstSeen DATE NOT NULL DEFAULT ( '2014-01-01' ), lastSeen DATE NOT NULL DEFAULT ( '2014-01-01' ), lastSpoke DATE NOT NULL DEFAULT ( '2014-01-01' ), firstGame NOT NULL DEFAULT ( 'None' ), lastGame NOT NULL DEFAULT ( 'None' ) );");
         }
     }
 }

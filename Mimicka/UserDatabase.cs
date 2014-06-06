@@ -121,5 +121,18 @@ namespace Tomestone
 
             var results = _db.Update("users", data, "@User = '@UserName'", parms);
         }
+
+        public void RemoveUser(string username)
+        {
+            if (!_users.ContainsKey(username)) return;
+
+            _users.Remove(username);
+            return;
+        }
+
+        public Boolean ContainsUser(string username)
+        {
+            return _users.ContainsKey(username);
+        }
     }
 }
