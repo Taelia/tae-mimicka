@@ -37,7 +37,6 @@ namespace Tomestone.Chatting
         public void OnMessage(Channel channel, IrcUser from, string message)
         {
             var obj = new MessageObject(from, message);
-            if (from.Nick == "tomestone") return;
 
             /* Due to the possibility that a message can be received from a user before the join event,
              * it is necessary to work around this by first checking here if the user has been
@@ -61,15 +60,12 @@ namespace Tomestone.Chatting
 
         public void OnJoin(Channel channel, string from)
         {
-            if (from == "tomestone") return;
-
             // avoid duplicate messages in the case where someone spoke before join
             if (!Users.ContainsUser(from))
             {
                 SendLastVisited(from);
                 UpdateOnJoin(from);
-            }
-            
+            }   
         }
 
         //Part and Quit don't work properly on Twitch
@@ -106,15 +102,15 @@ namespace Tomestone.Chatting
             data.Add("messageCount", (user.MessageCount + 1).ToString());
             data.Add("lastSpoke", DateTime.Now.ToString("s"));
 
+            // update the average message length
+            int newMessageLength = ( (user.MessageCount * user.MessageLength) + message.Length ) / (user.MessageCount + 1);
+
+            data.Add("messageLength", newMessageLength.ToString());
+
             // records what game is being streamed
             var stream = _twitch.GetTwitchStream(Main.chatMain.Substring(1));
             if (stream != null)
                 data.Add("lastGame", stream.game);
-
-            // handle the case where a user who was previously not in the database and was in the 
-            // chat channel at program startup did not have the lastSeen field updated,
-            // resulting in the next join displaying "Seen: 735376 days ago"
-            if (user.LastSeen == DateTime.Parse("2014-01-01")) data.Add("lastSeen", DateTime.Now.ToString("s"));
 
             // write to the database
             Users.Update(from, data);
@@ -132,7 +128,7 @@ namespace Tomestone.Chatting
             if (stream != null)
                 data.Add("lastGame", stream.game);
 
-            if ( (DateTime.Now + TimeSpan.FromHours(2)).Date != (user.LastSeen + TimeSpan.FromHours(2)).Date )
+            if ( (DateTime.Now + TimeSpan.FromHours(8)).Date != (user.LastSeen + TimeSpan.FromHours(8)).Date )
                 data.Add("visitCount", (user.VisitCount + 1).ToString());
 
             Users.Update(from, data);
@@ -145,8 +141,8 @@ namespace Tomestone.Chatting
             //dont need to do anything if the difference is less than 5mins
             if ( (DateTime.Now - user.LastSeen) < TimeSpan.FromMinutes(5)) return;
 
-            var seenText = (user.LastSeen == DateTime.Parse("2014-01-01")) ? "Unknown" : DaysAgoText(((DateTime.Now + TimeSpan.FromHours(2)).Date - (user.LastSeen + TimeSpan.FromHours(2)).Date).Days);
-            var spokeText = (user.LastSpoke == DateTime.Parse("2014-01-01")) ? "Unknown" : DaysAgoText(((DateTime.Now + TimeSpan.FromHours(2)).Date - (user.LastSpoke + TimeSpan.FromHours(2)).Date).Days);
+            var seenText = (user.LastSeen == DateTime.Parse("2014-01-01")) ? "Unknown" : DaysAgoText(((DateTime.Now + TimeSpan.FromHours(8)).Date - (user.LastSeen + TimeSpan.FromHours(8)).Date).Days);
+            var spokeText = (user.LastSpoke == DateTime.Parse("2014-01-01")) ? "Unknown" : DaysAgoText(((DateTime.Now + TimeSpan.FromHours(8)).Date - (user.LastSpoke + TimeSpan.FromHours(8)).Date).Days);
             var duringGame = user.LastGame;
 
             if (duringGame == "None" || duringGame == "") SendMessage("#taelia_welcome", "New viewer: " + from);

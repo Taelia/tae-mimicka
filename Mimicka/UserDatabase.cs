@@ -23,6 +23,7 @@ namespace Tomestone
             public int VisitCount;
             public int KappaCount;
             public int HeartCount;
+            public int MessageLength;
             public DateTime FirstSeen = DateTime.Parse("2014-01-01");
             public DateTime LastSeen = DateTime.Parse("2014-01-01");
             public DateTime LastSpoke = DateTime.Parse("2014-01-01");
@@ -39,6 +40,7 @@ namespace Tomestone
                         case "visitCount": VisitCount = int.Parse(data["visitCount"].ToString()); break;
                         case "kappaCount": KappaCount = int.Parse(data["kappaCount"].ToString()); break;
                         case "heartCount": HeartCount = int.Parse(data["heartCount"].ToString()); break;
+                        case "messageLength": MessageLength = int.Parse(data["messageLength"].ToString()); break;
                         case "firstSeen": FirstSeen = DateTime.Parse(data["firstSeen"].ToString()); break;
                         case "lastSeen": LastSeen = DateTime.Parse(data["lastSeen"].ToString()); break;
                         case "lastSpoke": LastSpoke = DateTime.Parse(data["lastSpoke"].ToString()); break;
