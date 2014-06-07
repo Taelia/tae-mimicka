@@ -128,7 +128,7 @@ namespace Tomestone.Chatting
             if (stream != null)
                 data.Add("lastGame", stream.game);
 
-            if ( (DateTime.Now + TimeSpan.FromHours(8)).Date != (user.LastSeen + TimeSpan.FromHours(8)).Date )
+            if ( (DateTime.Now + TimeSpan.FromHours(2)).Date != (user.LastSeen + TimeSpan.FromHours(2)).Date )
                 data.Add("visitCount", (user.VisitCount + 1).ToString());
 
             Users.Update(from, data);
@@ -141,8 +141,8 @@ namespace Tomestone.Chatting
             //dont need to do anything if the difference is less than 5mins
             if ( (DateTime.Now - user.LastSeen) < TimeSpan.FromMinutes(5)) return;
 
-            var seenText = (user.LastSeen == DateTime.Parse("2014-01-01")) ? "Unknown" : DaysAgoText(((DateTime.Now + TimeSpan.FromHours(8)).Date - (user.LastSeen + TimeSpan.FromHours(8)).Date).Days);
-            var spokeText = (user.LastSpoke == DateTime.Parse("2014-01-01")) ? "Unknown" : DaysAgoText(((DateTime.Now + TimeSpan.FromHours(8)).Date - (user.LastSpoke + TimeSpan.FromHours(8)).Date).Days);
+            var seenText = (user.LastSeen == DateTime.Parse("2014-01-01")) ? "Unknown" : DaysAgoText(((DateTime.Now + TimeSpan.FromHours(2)).Date - (user.LastSeen + TimeSpan.FromHours(2)).Date).Days);
+            var spokeText = (user.LastSpoke == DateTime.Parse("2014-01-01")) ? "Unknown" : DaysAgoText(((DateTime.Now + TimeSpan.FromHours(2)).Date - (user.LastSpoke + TimeSpan.FromHours(2)).Date).Days);
             var duringGame = user.LastGame;
 
             if (duringGame == "None" || duringGame == "") SendMessage("#taelia_welcome", "New viewer: " + from);
