@@ -103,8 +103,11 @@ namespace Tomestone.Chatting
             data.Add("lastSpoke", DateTime.Now.ToString("s"));
 
             // update the character count
-            if (user.CharacterCount == 0) data.Add("characterCount", (user.MessageCount * 30).ToString()); // assume average of 30 characters per message for initialization            
-            else data.Add("characterCount", (user.CharacterCount + message.Length).ToString());
+            int newCharCount;
+            if (user.CharacterCount == 0) newCharCount = (user.MessageCount * 30) + message.Length; // assume average of 30 characters per message for initialization            
+            else newCharCount = user.CharacterCount + message.Length;
+
+            data.Add("characterCount", newCharCount.ToString());    
 
             // records what game is being streamed
             var stream = _twitch.GetTwitchStream(Main.chatMain.Substring(1));
