@@ -1,15 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Configuration;
-using System.Data;
-using System.Linq;
-using System.Threading.Tasks;
 using System.Windows;
-using TomeLib.Db;
 using TomeLib.Irc;
-using Tomestone.Chatting;
 
-namespace Tomestone
+namespace Mimicka
 {
     /// <summary>
     /// Interaction logic for App.xaml
@@ -28,7 +21,6 @@ namespace Tomestone
         void App_Exit(object sender, ExitEventArgs e)
         {
             Environment.Exit(1);
-            Irc.Exit();
         }
     }
 }

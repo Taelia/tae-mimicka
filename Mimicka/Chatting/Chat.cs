@@ -1,147 +1,73 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Tomestone.Chatting;
-using System.Windows;
-using TomeLib.Irc;
-using TomeLib.Db;
+using System.Globalization;
 using Meebey.SmartIrc4net;
+using Mimicka.Models;
+using TomeLib.Db;
+using TomeLib.Irc;
 using TomeLib.Twitch;
-using System.Windows.Threading;
-using Tomestone.Models;
 
-namespace Tomestone.Chatting
+namespace Mimicka.Chatting
 {
-    public partial class TomeChat : IChat
+    public class Chat : ChatBase
     {
-        public History SentMessages { get; set; }
-        public History ReceivedMessages { get; set; }
-
-        private TwitchConnection _twitch;
+        private readonly Statistics _statistics;
         private Database _db { get { return Main.Db; } }
 
-        public UserDatabase Users;
+        private readonly UserDatabase _userDatabase;
 
-        public TomeChat()
+        public const string MainChannel = "#taelia_";
+
+        public Chat()
+            : base(new Irc("Tomestone", "oauth:npafwpg44j0a5iullxo2dt385n5jeco", new[] { MainChannel }))
         {
-            SentMessages = new History();
-            ReceivedMessages = new History();
+            var twitch = new TwitchConnection();
 
-            _twitch = new TwitchConnection();
-
-            Users = new UserDatabase(_db, _twitch);
+            _userDatabase = new UserDatabase(_db, twitch);
+            _statistics = new Statistics(_userDatabase, twitch);
         }
 
-        public void OnMessage(Channel channel, IrcUser from, string message)
+        protected override void OnMessage(Channel channel, IrcUser from, string message)
         {
-            var obj = new MessageObject(from, message);
-
-            /* Due to the possibility that a message can be received from a user before the join event,
-             * it is necessary to work around this by first checking here if the user has been
-             * initialized. (this would be expected if the join had actually happened first).
-             */
-            if (!Users.ContainsUser(from.Nick))
-            {
-                //Console.WriteLine("messaged received before join");
+            //Due to Twitch architecture, a user can send a message before a JOIN.
+            if (!_userDatabase.ContainsUser(from.Nick))
                 OnJoin(channel, from.Nick);
-            }
 
-
-            UpdateOnMessage(from.Nick, message);
+            _statistics.UpdateOnMessage(from.Nick, message);
         }
 
-        public void OnAction(Channel channel, IrcUser from, string message)
+        protected override void OnAction(Channel channel, IrcUser from, string message)
         {
             //Treat the same as messages.
             OnMessage(channel, from, message);
         }
 
-        public void OnJoin(Channel channel, string from)
+        protected override void OnJoin(Channel channel, string from)
         {
-            // avoid duplicate messages in the case where someone spoke before join
-            if (!Users.ContainsUser(from))
-            {
-                SendLastVisited(from);
-                UpdateOnJoin(from);
-            }   
+            //Ignore if user already sent a message prior to the JOIN event.
+            if (_userDatabase.ContainsUser(from)) return;
+
+            SendLastVisited(from);
+            _statistics.UpdateOnJoin(from);
         }
 
         //Part and Quit don't work properly on Twitch
-        public void OnPart(Channel channel, string from)
+        protected override void OnPart(Channel channel, string from)
         {
-            // remove the user from the list of users
-            Console.WriteLine("removed user from list");
-            Users.RemoveUser(from);
+            _userDatabase.RemoveUser(from);
         }
-        public void OnQuit(Channel channel, string from)
+        protected override void OnQuit(Channel channel, string from)
         {
             //Treat the same as parts.
             OnPart(channel, from);
         }
 
-        public void UpdateOnMessage(string from, string message)
+        private void SendLastVisited(string from)
         {
-            // possible cases:
-            // 1. user does not exist in database (was in the channel when program was started)
-            // 2. user exists in database
+            var user = _userDatabase.GetUser(from);
 
-            // get the information for the user
-            // - will initialize the user if not found
-            var user = Users.GetUser(from);
-
-            var data = new Dictionary<string, string>();
-
-            // update user information on the database based on contents of message
-            if (message.Contains("<3"))
-                data.Add("heartCount", (user.HeartCount + 1).ToString());
-            if (message.Contains("Kappa"))
-                data.Add("kappaCount", (user.KappaCount + 1).ToString());
-
-            data.Add("messageCount", (user.MessageCount + 1).ToString());
-            data.Add("lastSpoke", DateTime.Now.ToString("s"));
-
-            // update the character count
-            int newCharCount;
-            if (user.CharacterCount == 0) newCharCount = (user.MessageCount * 30) + message.Length; // assume average of 30 characters per message for initialization            
-            else newCharCount = user.CharacterCount + message.Length;
-
-            data.Add("characterCount", newCharCount.ToString());    
-
-            // records what game is being streamed
-            var stream = _twitch.GetTwitchStream(Main.chatMain.Substring(1));
-            if (stream != null)
-                data.Add("lastGame", stream.game);
-
-            // write to the database
-            Users.Update(from, data);
-        }
-
-        private void UpdateOnJoin(string from)
-        {
-            // update user visit data when they join
-            var user = Users.GetUser(from);
-
-            var data = new Dictionary<string, string>();
-
-            data.Add("lastSeen", DateTime.Now.ToString("s"));
-            var stream = _twitch.GetTwitchStream(Main.chatMain.Substring(1));
-            if (stream != null)
-                data.Add("lastGame", stream.game);
-
-            if ( (DateTime.Now + TimeSpan.FromHours(2)).Date != (user.LastSeen + TimeSpan.FromHours(2)).Date )
-                data.Add("visitCount", (user.VisitCount + 1).ToString());
-
-            Users.Update(from, data);
-        }
-
-        public void SendLastVisited(string from)
-        {
-            var user = Users.GetUser(from);
-            
             //dont need to do anything if the difference is less than 5mins
-            if ( (DateTime.Now - user.LastSeen) < TimeSpan.FromMinutes(5)) return;
+            if ((DateTime.Now - user.LastSeen) < TimeSpan.FromMinutes(5)) return;
 
             var seenText = (user.LastSeen == DateTime.Parse("2014-01-01")) ? "Unknown" : DaysAgoText(((DateTime.Now + TimeSpan.FromHours(2)).Date - (user.LastSeen + TimeSpan.FromHours(2)).Date).Days);
             var spokeText = (user.LastSpoke == DateTime.Parse("2014-01-01")) ? "Unknown" : DaysAgoText(((DateTime.Now + TimeSpan.FromHours(2)).Date - (user.LastSpoke + TimeSpan.FromHours(2)).Date).Days);
@@ -151,6 +77,7 @@ namespace Tomestone.Chatting
             else SendMessage("#taelia_welcome", from + "| Seen: " + seenText + " during [" + duringGame + "] | Spoke: " + spokeText);
         }
 
+        //Utility
         private string DaysAgoText(int days)
         {
             var daysAgoText = "";

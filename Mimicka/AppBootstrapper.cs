@@ -1,11 +1,9 @@
-namespace Tomestone
-{
-	using System;
-	using System.Collections.Generic;
-	using Caliburn.Micro;
-    using Tomestone.ViewModels;
+using Caliburn.Micro;
+using Mimicka.ViewModels;
 
-	public class AppBootstrapper : Bootstrapper<MainViewModel>
+namespace Mimicka
+{
+    public class AppBootstrapper : Bootstrapper<MainViewModel>
 	{
 		
 	}
