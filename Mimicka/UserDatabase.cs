@@ -55,7 +55,9 @@ namespace Mimicka
             var stream = _twitch.GetTwitchStream(Chat.MainChannel.Substring(1));
             if (stream != null) user.FirstGame = stream.game;
 
-            _db.Insert("users", user.ToDictionary());
+            var data = user.ToDictionary();
+            data.Add("user", user.Name);
+            _db.Insert("users", data);
 
             return user;
         }
