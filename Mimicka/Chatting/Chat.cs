@@ -15,6 +15,7 @@ namespace Mimicka.Chatting
         private Database _db { get { return Main.Db; } }
 
         private readonly UserDatabase _userDatabase;
+        private readonly GameDatabase _gameDatabase;
 
         public const string MainChannel = "#taelia_";
 
@@ -24,7 +25,8 @@ namespace Mimicka.Chatting
             var twitch = new TwitchConnection();
 
             _userDatabase = new UserDatabase(_db, twitch);
-            _statistics = new Statistics(_userDatabase, twitch);
+            _gameDatabase = new GameDatabase(_db, twitch);
+            _statistics = new Statistics(_userDatabase, _gameDatabase, twitch);
         }
 
         protected override void OnMessage(Channel channel, IrcUser from, string message)
@@ -33,6 +35,7 @@ namespace Mimicka.Chatting
             if (!_userDatabase.ContainsUser(from.Nick))
                 OnJoin(channel, from.Nick);
 
+            SendLastVisited(from.Nick);
             _statistics.UpdateOnMessage(from.Nick, message);
         }
 
@@ -47,7 +50,7 @@ namespace Mimicka.Chatting
             //Ignore if user already sent a message prior to the JOIN event.
             if (_userDatabase.ContainsUser(from)) return;
 
-            SendLastVisited(from);
+            PrepareWelcomeMessage(from);
             _statistics.UpdateOnJoin(from);
         }
 
@@ -62,19 +65,28 @@ namespace Mimicka.Chatting
             OnPart(channel, from);
         }
 
-        private void SendLastVisited(string from)
+        private void PrepareWelcomeMessage(string from)
         {
             var user = _userDatabase.GetUser(from);
-
-            //dont need to do anything if the difference is less than 5mins
-            if ((DateTime.Now - user.LastSeen) < TimeSpan.FromMinutes(5)) return;
 
             var seenText = (user.LastSeen == DateTime.Parse("2014-01-01")) ? "Unknown" : DaysAgoText(((DateTime.Now + TimeSpan.FromHours(2)).Date - (user.LastSeen + TimeSpan.FromHours(2)).Date).Days);
             var spokeText = (user.LastSpoke == DateTime.Parse("2014-01-01")) ? "Unknown" : DaysAgoText(((DateTime.Now + TimeSpan.FromHours(2)).Date - (user.LastSpoke + TimeSpan.FromHours(2)).Date).Days);
             var duringGame = user.LastGame;
 
-            if (duringGame == "None" || duringGame == "") SendMessage("#taelia_welcome", "New viewer: " + from);
-            else SendMessage("#taelia_welcome", from + "| Seen: " + seenText + " during [" + duringGame + "] | Spoke: " + spokeText);
+            if (duringGame == "None" || duringGame == "") user.WelcomeMessage = "New viewer: " + from;
+            else user.WelcomeMessage = from + "| Seen: " + seenText + " during [" + duringGame + "] | Spoke: " + spokeText;            
+        }
+
+        private void SendLastVisited(string from)
+        {
+            var user = _userDatabase.GetUser(from);
+
+            if (user.FirstMessageFlag)
+            {
+                SendMessage("#caellel_test", user.WelcomeMessage);
+                user.FirstMessageFlag = false;
+            }
+
         }
 
         //Utility
