@@ -18,6 +18,7 @@ namespace Mimicka.Chatting
         private readonly GameDatabase _gameDatabase;
 
         public const string MainChannel = "#taelia_";
+        public const string WelcomeChannel = "#taelia_welcome";
 
         public Chat()
             : base(new Irc("Tomestone", "oauth:npafwpg44j0a5iullxo2dt385n5jeco", new[] { MainChannel }))
@@ -83,7 +84,7 @@ namespace Mimicka.Chatting
 
             if (user.FirstMessageFlag)
             {
-                SendMessage("#caellel_test", user.WelcomeMessage);
+                SendMessage(WelcomeChannel, user.WelcomeMessage);
                 user.FirstMessageFlag = false;
             }
 
