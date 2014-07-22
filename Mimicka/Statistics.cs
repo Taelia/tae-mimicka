@@ -53,8 +53,6 @@ namespace Mimicka
             if (stream != null)
                 user.LastGame = stream.game;
 
-            
-
             _userDatabase.Update(from, user);
         }
     }
