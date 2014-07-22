@@ -96,13 +96,15 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Compile Include="AppBootstrapper.cs" />
+    <Compile Include="Database Interface\Game.cs" />
+    <Compile Include="Database Interface\GameDatabase.cs" />
     <Compile Include="Statistics.cs" />
     <Compile Include="Updates\IVersion.cs" />
     <Compile Include="Updates\Version100.cs" />
-    <Compile Include="User.cs" />
-    <Compile Include="UserDatabase.cs" />
+    <Compile Include="Database Interface\User.cs" />
+    <Compile Include="Database Interface\UserDatabase.cs" />
+    <Compile Include="Updates\Version110.cs" />
     <Compile Include="ViewModels\MainViewModel.cs" />
-    <Compile Include="Updates\Update.cs" />
     <Compile Include="Views\MainView.xaml.cs">
       <DependentUpon>MainView.xaml</DependentUpon>
     </Compile>

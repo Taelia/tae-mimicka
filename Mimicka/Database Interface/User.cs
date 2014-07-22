@@ -17,6 +17,10 @@ namespace Mimicka
         public DateTime LastSpoke = DateTime.Parse("2014-01-01");
         public string FirstGame = "None";
         public string LastGame = "None";
+        public Boolean UniqueMessageFlag = false;
+        public string WelcomeMessage = "";
+
+        public Boolean FirstMessageFlag = true;
 
         public User(string name, Dictionary<string, string> data = null)
         {
@@ -42,6 +46,7 @@ namespace Mimicka
                     case "lastSpoke": LastSpoke = DateTime.Parse(data["lastSpoke"]); break;
                     case "firstGame": FirstGame = data["firstGame"]; break;
                     case "lastGame": LastGame = data["lastGame"]; break;
+                    case "uniqueMessageFlag": UniqueMessageFlag = Boolean.Parse(data["uniqueMessageFlag"]); break;
                 }
             }
 
@@ -62,6 +67,7 @@ namespace Mimicka
             data.Add("lastSpoke", LastSpoke.ToString("s"));
             data.Add("firstGame", FirstGame);
             data.Add("lastGame", LastGame);
+            data.Add("uniqueMessageFlag", UniqueMessageFlag.ToString());
 
             return data;
         }
